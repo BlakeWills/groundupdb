@@ -5,6 +5,7 @@ CONFIG -= qt
 
 SOURCES += \
         dbmanagement-tests.cpp \
+        keyvalue-tests.cpp \
         main.cpp
 
 include(../groundupdb/Defines.pri)

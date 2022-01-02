@@ -29,5 +29,8 @@ TEST_CASE("Create a new empty database","[createEmptyDB]") {
         const auto& p = fs::directory_iterator(db.getDirectory());
         REQUIRE(p == end(p)); // i.e. no contents as iterator is at the end already
         // C++17 Ref: https://en.cppreference.com/w/cpp/filesystem/directory_iterator
+
+        db.destroy();
+        REQUIRE(!fs::exists(db.getDirectory()));
     }
 }
