@@ -34,3 +34,25 @@ TEST_CASE("Create a new empty database","[createEmptyDB]") {
         REQUIRE(!fs::exists(db.getDirectory()));
     }
 }
+
+TEST_CASE("Load an existing database","[load]")
+{
+    SECTION("Database does not exist")
+    {
+        std::string dbname("myemptydb");
+        REQUIRE_THROWS_AS(Database::load(dbname), std::runtime_error);
+    }
+
+    SECTION("Database exists")
+    {
+        std::string dbname("myemptydb");
+        Database db(GroundUpDB::createEmptyDB(dbname));
+
+        REQUIRE(fs::is_directory(db.getDirectory()));
+
+        Database loadedDb(Database::load(dbname));
+        REQUIRE(db.getDirectory() == loadedDb.getDirectory());
+
+        loadedDb.destroy();
+    }
+}

@@ -78,3 +78,15 @@ void Database::destroy()
         fs::remove_all(m_fullpath);
     }
 }
+
+Database Database::load(std::string dbname)
+{
+    fs::path dbpath = fs::path(".groundupdb") / dbname;
+
+    if(!fs::exists(dbpath))
+    {
+        throw std::runtime_error("Requested database does not exist");
+    }
+
+    return Database(dbname, dbpath.u8string());
+}
