@@ -16,7 +16,7 @@ TEST_CASE("Create a new empty database","[createEmptyDB]") {
 
     SECTION("Default settings") {
         std::string dbname("myemptydb");
-        Database db(GroundUpDB::createEmptyDB(dbname));
+        groundupdb::Database db(groundupdb::GroundUpDB::createEmptyDB(dbname));
 
         // We know we have been successful when:-
         // 1. We have a valid database reference returned
@@ -40,17 +40,17 @@ TEST_CASE("Load an existing database","[load]")
     SECTION("Database does not exist")
     {
         std::string dbname("myemptydb");
-        REQUIRE_THROWS_AS(Database::load(dbname), std::runtime_error);
+        REQUIRE_THROWS_AS(groundupdb::Database::load(dbname), std::runtime_error);
     }
 
     SECTION("Database exists")
     {
         std::string dbname("myemptydb");
-        Database db(GroundUpDB::createEmptyDB(dbname));
+        groundupdb::Database db(groundupdb::GroundUpDB::createEmptyDB(dbname));
 
         REQUIRE(fs::is_directory(db.getDirectory()));
 
-        Database loadedDb(Database::load(dbname));
+        groundupdb::Database loadedDb(groundupdb::Database::load(dbname));
         REQUIRE(db.getDirectory() == loadedDb.getDirectory());
 
         loadedDb.destroy();

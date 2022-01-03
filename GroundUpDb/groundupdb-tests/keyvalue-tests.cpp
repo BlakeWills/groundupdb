@@ -11,7 +11,7 @@ TEST_CASE("Store and retrieve a value", "[setKeyValue,getKeyValue]")
         string key = "my_key";
         string value = "my_value";
 
-        Database db = Database::createEmpty("keyvalue-tests");
+        groundupdb::Database db = groundupdb::Database::createEmpty("keyvalue-tests");
 
         db.setKeyValue(key, value);
 

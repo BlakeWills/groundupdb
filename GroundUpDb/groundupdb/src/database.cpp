@@ -5,6 +5,8 @@
 #include <filesystem>
 
 using std::string;
+using namespace groundupdb;
+
 namespace fs = std::filesystem;
 
 Database::Database(string dbname, string fullpath)

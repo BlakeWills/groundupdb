@@ -5,6 +5,8 @@
 
 #include <filesystem>
 
+namespace groundupdb {
+
 class Database
 {
 public:
@@ -29,5 +31,7 @@ protected:
 private:
     std::filesystem::path getKeyValueFilePath(std::string key);
 };
+
+}
 
 #endif // DATABASE_H
