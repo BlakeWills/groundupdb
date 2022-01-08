@@ -14,12 +14,12 @@ public:
     virtual ~IDatabase() = default;
 
     // Instance db management functions
-    virtual std::string getDirectory(void);
-    virtual void destroy();
+    virtual std::string getDirectory() = 0;
+    virtual void destroy() = 0;
 
     // Instance key-value functions
-    virtual void setKeyValue(std::string key, std::string value);
-    virtual std::string getKeyValue(std::string key);
+    virtual void setKeyValue(std::string key, std::string value) = 0;
+    virtual std::string getKeyValue(std::string key) = 0;
 
     // Static management functions
     static const std::unique_ptr<IDatabase> createEmpty(std::string dbname);

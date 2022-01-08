@@ -14,7 +14,7 @@ public:
     ~EmbeddedDatabase();
 
     // Instance db management functions
-    std::string getDirectory(void);
+    std::string getDirectory();
     void destroy();
 
     // Instance key-value functions
