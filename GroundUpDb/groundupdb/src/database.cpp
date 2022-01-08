@@ -5,7 +5,6 @@
 #include <fstream>
 #include <filesystem>
 
-using std::string;
 using namespace groundupdb;
 using namespace groundupdbext;
 
@@ -15,7 +14,7 @@ namespace fs = std::filesystem;
 class EmbeddedDatabase::Impl : public IDatabase
 {
 public:
-    Impl(string dbname, string fullpath);
+    Impl(std::string dbname, std::string fullpath);
     ~Impl();
 
     // Instance db management functions
@@ -51,7 +50,7 @@ EmbeddedDatabase::Impl::~Impl()
     ;
 }
 
-const std::unique_ptr<IDatabase> EmbeddedDatabase::Impl::createEmpty(string dbname)
+const std::unique_ptr<IDatabase> EmbeddedDatabase::Impl::createEmpty(std::string dbname)
 {
     fs::path basedir = ".groundupdb";
     if(!fs::exists(basedir))
@@ -80,7 +79,7 @@ const std::unique_ptr<IDatabase> EmbeddedDatabase::Impl::load(std::string dbname
     return std::make_unique<EmbeddedDatabase::Impl>(dbname, dbpath.u8string());
 }
 
-void EmbeddedDatabase::Impl::setKeyValue(string key, string value)
+void EmbeddedDatabase::Impl::setKeyValue(std::string key, std::string value)
 {
     std::ofstream os;
     fs::path path = EmbeddedDatabase::Impl::getKeyValueFilePath(key);
@@ -90,11 +89,11 @@ void EmbeddedDatabase::Impl::setKeyValue(string key, string value)
     os.close();
 }
 
-string EmbeddedDatabase::Impl::getKeyValue(string key)
+std::string EmbeddedDatabase::Impl::getKeyValue(std::string key)
 {
     std::ifstream is;
     fs::path path = EmbeddedDatabase::Impl::getKeyValueFilePath(key);
-    string value;
+    std::string value;
 
     is.open(path, std::ios::in);
 
@@ -111,12 +110,12 @@ string EmbeddedDatabase::Impl::getKeyValue(string key)
     return value;
 }
 
-fs::path EmbeddedDatabase::Impl::getKeyValueFilePath(string key)
+fs::path EmbeddedDatabase::Impl::getKeyValueFilePath(std::string key)
 {
     return fs::path(m_fullpath) / (key + "_string.kv");
 }
 
-string EmbeddedDatabase::Impl::getDirectory()
+std::string EmbeddedDatabase::Impl::getDirectory()
 {
     return m_fullpath;
 }
@@ -131,7 +130,7 @@ void EmbeddedDatabase::Impl::destroy()
 
 // High level db API client
 
-EmbeddedDatabase::EmbeddedDatabase(string dbname, string fullpath)
+EmbeddedDatabase::EmbeddedDatabase(std::string dbname, std::string fullpath)
     : mImpl(std::make_unique<EmbeddedDatabase::Impl>(dbname, fullpath))
 {
 
@@ -142,7 +141,7 @@ EmbeddedDatabase::~EmbeddedDatabase()
     ;
 }
 
-const std::unique_ptr<IDatabase> EmbeddedDatabase::createEmpty(string dbname)
+const std::unique_ptr<IDatabase> EmbeddedDatabase::createEmpty(std::string dbname)
 {
     return EmbeddedDatabase::Impl::createEmpty(dbname);
 }
@@ -152,17 +151,17 @@ const std::unique_ptr<IDatabase> EmbeddedDatabase::load(std::string dbname)
     return EmbeddedDatabase::Impl::load(dbname);
 }
 
-void EmbeddedDatabase::setKeyValue(string key, string value)
+void EmbeddedDatabase::setKeyValue(std::string key, std::string value)
 {
     mImpl->setKeyValue(key, value);
 }
 
-string EmbeddedDatabase::getKeyValue(string key)
+std::string EmbeddedDatabase::getKeyValue(std::string key)
 {
     return mImpl->getKeyValue(key);
 }
 
-string EmbeddedDatabase::getDirectory()
+std::string EmbeddedDatabase::getDirectory()
 {
     return mImpl->getDirectory();
 }
