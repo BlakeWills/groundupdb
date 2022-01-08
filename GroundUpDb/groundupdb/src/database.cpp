@@ -1,4 +1,5 @@
 #include "database.h"
+#include "extensions/extdatabase.h"
 
 #include <iostream>
 #include <fstream>
@@ -6,16 +7,51 @@
 
 using std::string;
 using namespace groundupdb;
+using namespace groundupdbext;
 
 namespace fs = std::filesystem;
 
-Database::Database(string dbname, string fullpath)
+// Hidden DB implementation
+class EmbeddedDatabase::Impl : public IDatabase
+{
+public:
+    Impl(string dbname, string fullpath);
+    ~Impl();
+
+    // Instance db management functions
+    std::string getDirectory(void);
+    void destroy();
+
+    // Instance key-value functions
+    void setKeyValue(std::string key, std::string value);
+    std::string getKeyValue(std::string key);
+
+    // Static management functions
+    static const std::unique_ptr<IDatabase> createEmpty(std::string dbname);
+    static const std::unique_ptr<IDatabase> load(std::string dbname);
+
+private:
+    std::string m_name;
+    std::string m_fullpath;
+
+    std::filesystem::path getKeyValueFilePath(std::string key);
+};
+
+
+// Embedded Database Implementation
+
+EmbeddedDatabase::Impl::Impl(std::string dbname, std::string fullpath)
     : m_name(dbname), m_fullpath(fullpath)
 {
 
 }
 
-Database Database::createEmpty(string dbname)
+EmbeddedDatabase::Impl::~Impl()
+{
+    ;
+}
+
+const std::unique_ptr<IDatabase> EmbeddedDatabase::Impl::createEmpty(string dbname)
 {
     fs::path basedir = ".groundupdb";
     if(!fs::exists(basedir))
@@ -29,23 +65,35 @@ Database Database::createEmpty(string dbname)
         fs::create_directory(dbfolder);
     }
 
-    return Database(dbname, dbfolder.u8string());
+    return std::make_unique<EmbeddedDatabase::Impl>(dbname, dbfolder.u8string());
 }
 
-void Database::setKeyValue(string key, string value)
+const std::unique_ptr<IDatabase> EmbeddedDatabase::Impl::load(std::string dbname)
+{
+    fs::path dbpath = fs::path(".groundupdb") / dbname;
+
+    if(!fs::exists(dbpath))
+    {
+        throw std::runtime_error("Requested database does not exist");
+    }
+
+    return std::make_unique<EmbeddedDatabase::Impl>(dbname, dbpath.u8string());
+}
+
+void EmbeddedDatabase::Impl::setKeyValue(string key, string value)
 {
     std::ofstream os;
-    fs::path path = Database::getKeyValueFilePath(key);
+    fs::path path = EmbeddedDatabase::Impl::getKeyValueFilePath(key);
 
     os.open(path, std::ios::out | std::ios::trunc);
     os << value;
     os.close();
 }
 
-string Database::getKeyValue(string key)
+string EmbeddedDatabase::Impl::getKeyValue(string key)
 {
     std::ifstream is;
-    fs::path path = Database::getKeyValueFilePath(key);
+    fs::path path = EmbeddedDatabase::Impl::getKeyValueFilePath(key);
     string value;
 
     is.open(path, std::ios::in);
@@ -63,17 +111,17 @@ string Database::getKeyValue(string key)
     return value;
 }
 
-fs::path Database::getKeyValueFilePath(string key)
+fs::path EmbeddedDatabase::Impl::getKeyValueFilePath(string key)
 {
     return fs::path(m_fullpath) / (key + "_string.kv");
 }
 
-string Database::getDirectory()
+string EmbeddedDatabase::Impl::getDirectory()
 {
     return m_fullpath;
 }
 
-void Database::destroy()
+void EmbeddedDatabase::Impl::destroy()
 {
     if(fs::exists(m_fullpath))
     {
@@ -81,14 +129,45 @@ void Database::destroy()
     }
 }
 
-Database Database::load(std::string dbname)
+// High level db API client
+
+EmbeddedDatabase::EmbeddedDatabase(string dbname, string fullpath)
+    : mImpl(std::make_unique<EmbeddedDatabase::Impl>(dbname, fullpath))
 {
-    fs::path dbpath = fs::path(".groundupdb") / dbname;
 
-    if(!fs::exists(dbpath))
-    {
-        throw std::runtime_error("Requested database does not exist");
-    }
+}
 
-    return Database(dbname, dbpath.u8string());
+EmbeddedDatabase::~EmbeddedDatabase()
+{
+    ;
+}
+
+const std::unique_ptr<IDatabase> EmbeddedDatabase::createEmpty(string dbname)
+{
+    return EmbeddedDatabase::Impl::createEmpty(dbname);
+}
+
+const std::unique_ptr<IDatabase> EmbeddedDatabase::load(std::string dbname)
+{
+    return EmbeddedDatabase::Impl::load(dbname);
+}
+
+void EmbeddedDatabase::setKeyValue(string key, string value)
+{
+    mImpl->setKeyValue(key, value);
+}
+
+string EmbeddedDatabase::getKeyValue(string key)
+{
+    return mImpl->getKeyValue(key);
+}
+
+string EmbeddedDatabase::getDirectory()
+{
+    return mImpl->getDirectory();
+}
+
+void EmbeddedDatabase::destroy()
+{
+    mImpl->destroy();
 }

@@ -16,22 +16,22 @@ TEST_CASE("Create a new empty database","[createEmptyDB]") {
 
     SECTION("Default settings") {
         std::string dbname("myemptydb");
-        groundupdb::Database db(groundupdb::GroundUpDB::createEmptyDB(dbname));
+        std::unique_ptr<groundupdb::IDatabase> db(groundupdb::GroundUpDB::createEmptyDB(dbname));
 
         // We know we have been successful when:-
         // 1. We have a valid database reference returned
         //   - No test -> The above would have errored
         // 2. The DB has a folder that exists on the file system
-        REQUIRE(fs::is_directory(fs::status(db.getDirectory())));
+        REQUIRE(fs::is_directory(fs::status(db->getDirectory())));
         // C++17 Ref: https://en.cppreference.com/w/cpp/filesystem/is_directory
 
         // 3. The database folder is empty (no database files yet)
-        const auto& p = fs::directory_iterator(db.getDirectory());
+        const auto& p = fs::directory_iterator(db->getDirectory());
         REQUIRE(p == end(p)); // i.e. no contents as iterator is at the end already
         // C++17 Ref: https://en.cppreference.com/w/cpp/filesystem/directory_iterator
 
-        db.destroy();
-        REQUIRE(!fs::exists(db.getDirectory()));
+        db->destroy();
+        REQUIRE(!fs::exists(db->getDirectory()));
     }
 }
 
@@ -40,19 +40,19 @@ TEST_CASE("Load an existing database","[load]")
     SECTION("Database does not exist")
     {
         std::string dbname("myemptydb");
-        REQUIRE_THROWS_AS(groundupdb::Database::load(dbname), std::runtime_error);
+        REQUIRE_THROWS_AS(groundupdb::GroundUpDB::loadDB(dbname), std::runtime_error);
     }
 
     SECTION("Database exists")
     {
         std::string dbname("myemptydb");
-        groundupdb::Database db(groundupdb::GroundUpDB::createEmptyDB(dbname));
+        std::unique_ptr<groundupdb::IDatabase> db(groundupdb::GroundUpDB::createEmptyDB(dbname));
 
-        REQUIRE(fs::is_directory(db.getDirectory()));
+        REQUIRE(fs::is_directory(db->getDirectory()));
 
-        groundupdb::Database loadedDb(groundupdb::Database::load(dbname));
-        REQUIRE(db.getDirectory() == loadedDb.getDirectory());
+        std::unique_ptr<groundupdb::IDatabase> loadedDb(groundupdb::GroundUpDB::loadDB(dbname));
+        REQUIRE(db->getDirectory() == loadedDb->getDirectory());
 
-        loadedDb.destroy();
+        loadedDb->destroy();
     }
 }

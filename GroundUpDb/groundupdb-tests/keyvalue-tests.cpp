@@ -11,12 +11,13 @@ TEST_CASE("Store and retrieve a value", "[setKeyValue,getKeyValue]")
         string key = "my_key";
         string value = "my_value";
 
-        groundupdb::Database db = groundupdb::Database::createEmpty("keyvalue-tests");
+        std::string dbname("keyvalue-tests");
+        std::unique_ptr<groundupdb::IDatabase> db(groundupdb::GroundUpDB::createEmptyDB(dbname));
 
-        db.setKeyValue(key, value);
+        db->setKeyValue(key, value);
 
-        REQUIRE(value == db.getKeyValue(key));
+        REQUIRE(value == db->getKeyValue(key));
 
-        db.destroy();
+        db->destroy();
     }
 }
